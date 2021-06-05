@@ -1,4 +1,4 @@
-.PHONY: help all create delete deploy check clean app loderunner test load-test reset-prometheus reset-grafana jumpbox target
+.PHONY: help all create delete deploy check clean test load-test reset-prometheus reset-grafana jumpbox target
 
 K8S ?= "kind"
 
@@ -10,8 +10,6 @@ help :
 	@echo "   make deploy           - deploy the apps to the cluster"
 	@echo "   make check            - check the endpoints with curl"
 	@echo "   make clean            - delete the apps from the cluster"
-	@echo "   make app              - build and deploy a local app docker image"
-	@echo "   make loderunner       - build and deploy a local LodeRunner docker image"
 	@echo "   make test             - run a LodeRunner test (generates warnings)"
 	@echo "   make load-test        - run a 60 second load test"
 	@echo "   make reset-prometheus - reset the Prometheus volume (existing data is deleted)"
@@ -30,7 +28,7 @@ create :
 	@# this will fail harmlessly if the cluster exists
 	@# default cluster name is kind
 
-	@kind create cluster --config deploy/kind.yaml
+	@kind create cluster --config deploy/kind/kind.yaml
 
 	# wait for cluster to be ready
 	@kubectl wait node --for condition=ready --all --timeout=60s
@@ -84,57 +82,13 @@ clean :
 	# show running pods
 	@kubectl get po -A
 
-app :
-	# build the local image and load into ${K8S}
-	docker build ../ngsa-app -t ngsa-app:local
-
-	kind load docker-image ngsa-app:local
-
-	# delete LodeRunner
-	-kubectl delete -f deploy/loderunner --ignore-not-found=true
-
-	# display the app version
-	-http localhost:30080/version
-
-	# delete/deploy the app
-	-kubectl delete -f deploy/ngsa-memory --ignore-not-found=true
-	kubectl apply -f deploy/ngsa-local
-
-	# deploy LodeRunner after app starts
-	@kubectl wait pod ngsa-memory --for condition=ready --timeout=30s
-	kubectl apply -f deploy/loderunner
-	@kubectl wait pod loderunner --for condition=ready --timeout=30s
-
-	@kubectl get po
-
-	# display the app version
-	@http localhost:30080/version
-
-loderunner :
-	# build the local image and load into ${K8S}
-	docker build ../loderunner -t ngsa-lr:local
-	
-	kind load docker-image ngsa-lr:local
-
-	# display current version
-	-http localhost:30088/version
-
-	# delete / create LodeRunner
-	-kubectl delete -f deploy/loderunner --ignore-not-found=true
-	kubectl apply -f deploy/loderunner-local
-	kubectl wait pod loderunner --for condition=ready --timeout=30s
-	@kubectl get po
-
-	# display the current version
-	@http localhost:30088/version
-
 test :
 	# run a single test
-	webv -s http://localhost:30080 -f ../loderunner/baseline.json
+	webv -s http://localhost:30080 -f baseline.json
 
 load-test :
 	# run a 60 second load test
-	webv -s http://localhost:30080 -f ../loderunner/baseline.json benchmark.json -r -l 1 --duration 60
+	webv -s http://localhost:30080 -f benchmark.json -r -l 1 --duration 60
 
 reset-prometheus :
 	# remove and create the /prometheus volume
