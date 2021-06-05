@@ -12,8 +12,8 @@ Create your repo from this template and add your application code
 
 ### Engineering Docs
 
-- Team Working [Agreement](docs/WorkingAgreement.md)
-- Team [Engineering Practices](docs/EngineeringPractices.md)
+- Team Working [Agreement](.github/WorkingAgreement.md)
+- Team [Engineering Practices](.github/EngineeringPractices.md)
 - CSE Engineering Fundamentals [Playbook](https://github.com/Microsoft/code-with-engineering-playbook)
 
 ## How to file issues and get help  

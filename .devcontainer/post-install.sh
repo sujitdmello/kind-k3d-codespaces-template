@@ -1,9 +1,9 @@
 #!/bin/sh
 
-# install WebV
-# we can't install this in the base image
-dotnet tool install -g webvalidate
+# copy grafana.db to /grafana
+sudo mkdir -p /grafana
+sudo  cp deploy/grafanadata/grafana.db /grafana
+sudo  chown -R 472:472 /grafana
 
-# copy our grafana dashboards
-sudo cp deploy/grafana/grafana.db /grafana
-sudo chown -R 472:472 /grafana
+# install webv
+dotnet tool install -g webvalidate --version 2.0.0-beta2
