@@ -1,4 +1,4 @@
-.PHONY: help all create delete deploy check clean app loderunner test load-test reset-prometheus reset-grafana jumpbox target
+.PHONY: help all create delete deploy check clean app loderunner test load-test reset-prometheus reset-grafana jumpbox
 
 K8S ?= "kind"
 
@@ -23,37 +23,43 @@ all : delete create deploy jumpbox check
 delete :
 	# delete the cluster (if exists)
 	@# this will fail harmlessly if the cluster does not exist
-	@kind delete cluster
+	@k3d cluster delete
 
 create :
-	# create the cluster and wait for ready
+	@# create the cluster and wait for ready
 	@# this will fail harmlessly if the cluster exists
-	@# default cluster name is kind
+	@# default cluster name is k3d
 
-	@kind create cluster --config deploy/kind/kind.yaml
+	@k3d cluster create --config k3d.yaml
 
 	# wait for cluster to be ready
 	@kubectl wait node --for condition=ready --all --timeout=60s
+	@kubectl wait job helm-install-traefik -n kube-system --for condition=complete --timeout=60s
+	@kubectl wait pod -n kube-system --for condition=ready -l app=local-path-provisioner  --timeout=60s
+	@kubectl wait pod -n kube-system --for condition=ready -l k8s-app=metrics-server  --timeout=60s
+	@kubectl wait pod -n kube-system --for condition=ready -l k8s-app=kube-dns  --timeout=60s
+	@kubectl wait pod -n kube-system --for condition=ready -l app=svclb-traefik  --timeout=60s
+	@kubectl wait pod -n kube-system --for condition=ready -l app=traefik  --timeout=60s
 
 deploy :
 	# deploy the app
 	@# continue on most errors
-	-kubectl apply -f deploy/ngsa-memory
+	-kubectl apply -f ../deploy/ngsa-memory
 
 	# deploy prometheus and grafana
-	-kubectl apply -f deploy/prometheus
-	-kubectl apply -f deploy/grafana
+	-kubectl apply -f ../deploy/prometheus
+	-kubectl apply -f ../deploy/grafana
 
 	# deploy fluent bit
 	-kubectl create secret generic log-secrets --from-literal=WorkspaceId=dev --from-literal=SharedKey=dev
-	-kubectl apply -f deploy/fluentbit/account.yaml
-	-kubectl apply -f deploy/fluentbit/log.yaml
-	-kubectl apply -f deploy/fluentbit/stdout-config.yaml
-	-kubectl apply -f deploy/fluentbit/fluentbit-pod.yaml
+	-kubectl apply -f ../deploy/fluentbit/account.yaml
+	-kubectl apply -f ../deploy/fluentbit/log.yaml
+	-kubectl apply -f ../deploy/fluentbit/stdout-config.yaml
+	-kubectl apply -f ../deploy/fluentbit/fluentbit-pod.yaml
 
 	# deploy LodeRunner after the app starts
 	@kubectl wait pod ngsa-memory --for condition=ready --timeout=30s
-	-kubectl apply -f deploy/loderunner
+	-kubectl apply -f ../deploy/loderunner
 
 	# wait for the pods to start
 	@kubectl wait pod -n monitoring --for condition=ready --all --timeout=30s
@@ -75,11 +81,10 @@ check :
 clean :
 	# delete the deployment
 	@# continue on error
-	-kubectl delete pod jumpbox --ignore-not-found=true
-	-kubectl delete -f deploy/loderunner --ignore-not-found=true
-	-kubectl delete -f deploy/ngsa-memory --ignore-not-found=true
+	-kubectl delete -f ../deploy/loderunner --ignore-not-found=true
+	-kubectl delete -f ../deploy/ngsa-memory --ignore-not-found=true
 	-kubectl delete ns monitoring --ignore-not-found=true
-	-kubectl delete -f deploy/fluentbit/fluentbit-pod.yaml --ignore-not-found=true
+	-kubectl delete -f ../deploy/fluentbit/fluentbit-pod.yaml --ignore-not-found=true
 	-kubectl delete secret log-secrets --ignore-not-found=true
 
 	# show running pods
@@ -89,63 +94,66 @@ app :
 	# build the local image and load into ${K8S}
 	docker build ../ngsa-app -t ngsa-app:local
 
-	kind load docker-image ngsa-app:local
+	k3d image import ngsa-app:local
 
 	# delete LodeRunner
-	-kubectl delete -f deploy/loderunner --ignore-not-found=true
+	-kubectl delete -f ../deploy/loderunner --ignore-not-found=true
+
+	# display the app version
+	-http localhost:30080/version
 
 	# delete/deploy the app
-	-kubectl delete -f deploy/ngsa-memory --ignore-not-found=true
-	kubectl apply -f deploy/ngsa-local
+	-kubectl delete -f ../deploy/ngsa-memory --ignore-not-found=true
+	kubectl apply -f ../deploy/ngsa-local
 
 	# deploy LodeRunner after app starts
 	@kubectl wait pod ngsa-memory --for condition=ready --timeout=30s
-	@sleep 5
-	kubectl apply -f deploy/loderunner
+	kubectl apply -f ../deploy/loderunner
 	@kubectl wait pod loderunner --for condition=ready --timeout=30s
 
 	@kubectl get po
 
 	# display the app version
-	-http localhost:30080/version
+	@http localhost:30080/version
 
 loderunner :
 	# build the local image and load into ${K8S}
 	docker build ../loderunner -t ngsa-lr:local
 	
-	kind load docker-image ngsa-lr:local
+	k3d image import ngsa-lr:local
+
+	# display current version
+	-http localhost:30088/version
 
 	# delete / create LodeRunner
-	-kubectl delete -f deploy/loderunner --ignore-not-found=true
-	kubectl apply -f deploy/loderunner-local
+	-kubectl delete -f ../deploy/loderunner --ignore-not-found=true
+	kubectl apply -f ../deploy/loderunner-local
 	kubectl wait pod loderunner --for condition=ready --timeout=30s
 	@kubectl get po
 
 	# display the current version
-	-http localhost:30088/version
+	@http localhost:30088/version
 
 test :
 	# run a single test
-	webv --verbose --server http://localhost:30080 --files ../loderunner/baseline.json
+	webv -s http://localhost:30080 -f ../../loderunner/baseline.json
 
 load-test :
-	# run a 10 second load test
-	webv --verbose --server http://localhost:30080 --files benchmark.json --run-loop --sleep 100 --duration 10
+	# run a 60 second load test
+	webv -s http://localhost:30080 -f ../../loderunner/baseline.json benchmark.json -r -l 1 --duration 60
 
 reset-prometheus :
 	# remove and create the /prometheus volume
-	-kubectl delete -f deploy/prometheus/3-prometheus-deployment.yaml
-	@sudo rm -rf /prometheus/wal
+	@sudo rm -rf /prometheus
+	@sudo mkdir -p /prometheus
 	@sudo chown -R 65534:65534 /prometheus
-	# redeploy Prometheus - kubectl apply -f deploy/prometheus
 
 reset-grafana :
 	# remove and copy the data to /grafana volume
-	-kubectl delete -f deploy/grafana/deployment.yaml
-	@sudo rm -f /grafana/grafana.db
-	@sudo cp -R deploy/grafanadata/grafana.db /grafana
+	@sudo rm -rf /grafana
+	@sudo mkdir -p /grafana
+	@sudo cp -R ../deploy/grafanadata/grafana.db /grafana
 	@sudo chown -R 472:472 /grafana
-	# redeploy Grafana - kubectl apply -f deploy/grafana
 
 jumpbox :
 	@# start a jumpbox pod
@@ -153,11 +161,10 @@ jumpbox :
 
 	@kubectl run jumpbox --image=alpine --restart=Always -- /bin/sh -c "trap : TERM INT; sleep 9999999999d & wait"
 	@kubectl wait pod jumpbox --for condition=ready --timeout=30s
-	@kubectl exec jumpbox -- /bin/sh -c "apk update && apk add bash curl nano jq py-pip" > /dev/null
-	@kubectl exec jumpbox -- /bin/sh -c "pip3 install --upgrade pip setuptools httpie" > /dev/null
+	@kubectl exec jumpbox -- /bin/sh -c "apk update && apk add bash curl httpie" > /dev/null
 	@kubectl exec jumpbox -- /bin/sh -c "echo \"alias ls='ls --color=auto'\" >> /root/.profile && echo \"alias ll='ls -lF'\" >> /root/.profile && echo \"alias la='ls -alF'\" >> /root/.profile && echo 'cd /root' >> /root/.profile" > /dev/null
 
-	# Run an interactive bash shell in the jumpbox
-	# kj
+	#
 	# use kje <command>
 	# kje http ngsa-memory:8080/version
+	# kje bash -l
