@@ -1,4 +1,4 @@
-.PHONY: help all create delete deploy check clean app loderunner test load-test reset-prometheus reset-grafana jumpbox
+.PHONY: help all create delete deploy check clean app loderunner test reset-prometheus reset-grafana jumpbox target
 
 help :
 	@echo "Usage:"
@@ -10,8 +10,7 @@ help :
 	@echo "   make clean            - delete the apps from the cluster"
 	@echo "   make app              - build and deploy a local app docker image"
 	@echo "   make loderunner       - build and deploy a local LodeRunner docker image"
-	@echo "   make test             - run a LodeRunner test (generates warnings)"
-	@echo "   make load-test        - run a 60 second load test"
+	@echo "   make test             - run a LodeRunner test"
 	@echo "   make reset-prometheus - reset the Prometheus volume (existing data is deleted)"
 	@echo "   make reset-grafana    - reset the Grafana volume (existing data is deleted)"
 	@echo "   make jumpbox          - deploy a 'jumpbox' pod"
@@ -123,12 +122,8 @@ loderunner :
 	-http localhost:30088/version
 
 test :
-	# run a single test
-	webv --verbose --server http://localhost:30080 --files ../loderunner/baseline.json
-
-load-test :
-	# run a 10 second load test
-	webv --verbose --server http://localhost:30080 --files benchmark.json --run-loop --sleep 100 --duration 10
+	# use WebValidate to run a test
+	webv --verbose --server http://localhost:30080 --files webv/benchmark.json
 
 reset-prometheus :
 	# remove and create the /prometheus volume
