@@ -130,13 +130,13 @@ kubectl get pods
 kubectl logs fluentb
 
 # run baseline test
-kubectl apply -f ../loderunner/baseline-memory.yaml
+kubectl apply -f ../webv/baseline-memory.yaml
 
 # check pods
 kubectl get pods
 
 # delete baseline test after status: Completed
-kubectl delete -f ../loderunner/baseline-memory.yaml
+kubectl delete -f ../webv/baseline-memory.yaml
 
 # check pods
 kubectl get pods

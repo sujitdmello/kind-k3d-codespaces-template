@@ -270,7 +270,7 @@
       "pluginVersion": "7.5.6",
       "targets": [
         {
-          "expr": "sum(rate(LodeRunnerDuration_count[1m]))",
+          "expr": "sum(rate(WebVDuration_count[1m]))",
           "instant": false,
           "interval": "",
           "legendFormat": "",
@@ -279,7 +279,7 @@
       ],
       "timeFrom": null,
       "timeShift": null,
-      "title": "LodeRunner",
+      "title": "WebV",
       "type": "stat"
     },
     {

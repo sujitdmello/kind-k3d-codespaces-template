@@ -38,7 +38,7 @@ By default the solution will create a `kind` cluster. If you want to use [k3d](h
 
   ```
 
-![Running Codespace](./images/RunningCodespace.jpg)
+![Running Codespace](./images/RunningCodespace.png)
 
 ## Validate Deployment
 
@@ -48,7 +48,7 @@ Output from `make all` should resemble this
 
 default      fluentb                                   1/1   Running   0   31s
 default      jumpbox                                   1/1   Running   0   25s
-default      loderunner                                1/1   Running   0   31s
+default      webv                                      1/1   Running   0   31s
 default      ngsa-memory                               1/1   Running   0   33s
 monitoring   grafana-64f7dbcf96-cfmtd                  1/1   Running   0   32s
 monitoring   prometheus-deployment-67cbf97f84-tjxm7    1/1   Running   0   32s
@@ -75,7 +75,7 @@ monitoring   prometheus-deployment-67cbf97f84-tjxm7    1/1   Running   0   32s
   - To view other deployed resources - press `shift + :` followed by the deployment type (e.g. `secret`, `services`, `deployment`, etc).
   - To exit - `:q <enter>`
 
-![k9s](./images/k9s.jpg)
+![k9s](./images/k9s.png)
 
 ## Service endpoints
 
@@ -119,6 +119,17 @@ A `jump box` pod is created so that you can execute commands `in the cluster`
 - example
   - run http against the ClusterIP
     - `kje http ngsa-memory:8080/version`
+
+## View Prometheus Dashboard
+
+- Click on the `ports` tab of the terminal window
+- Click on the `open in browser icon` on the Prometheus port (30000)
+- This will open Prometheus in a new browser tab
+
+- From the Prometheus tab
+  - Begin typing NgsaAppDuration_bucket in the `Expression` search
+  - Click `Execute`
+  - This will display the `histogram` that Grafana uses for the charts
 
 ## Launch Grafana Dashboard
 
@@ -164,17 +175,6 @@ make load-test
 
 ![Load Test](./images/LoadTest.jpg)
 
-## View Prometheus Dashboard
-
-- Click on the `ports` tab of the terminal window
-- Click on the `open in browser icon` on the Prometheus port (30000)
-- This will open Prometheus in a new browser tab
-
-- From the Prometheus tab
-  - Begin typing NgsaAppDuration_bucket in the `Expression` search
-  - Click `Execute`
-  - This will display the `histogram` that Grafana uses for the charts
-
 ## View Fluent Bit Logs
 
 - Start `k9s` from the Codespace terminal
@@ -184,7 +184,7 @@ make load-test
 - Press `w` to Toggle Wrap
 - Review logs that will be sent to Log Analytics when configured
 
-## Build and deploy a local version of LodeRunner
+## Build and deploy a local version of WebValidate
 
 - Switch back to your Codespaces tab
 
@@ -192,8 +192,8 @@ make load-test
 
 # from Codespaces terminal
 
-# make and deploy a local version of LodeRunner to k8s
-make loderunner
+# make and deploy a local version of WebV to k8s
+make webv
 
 ```
 

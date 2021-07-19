@@ -73,11 +73,11 @@ GET http://localhost:30080/api/movies?rating=8.0 HTTP/1.1
 
 ###
 
-# LodeRunner version
+# WebValidate version
 # note the / url will fail by design
 GET http://localhost:30088/version HTTP/1.1
 
 ###
 
-# LodeRunner metrics
+# WebValidate metrics
 GET http://localhost:30088/metrics HTTP/1.1

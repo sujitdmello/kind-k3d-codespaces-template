@@ -107,9 +107,9 @@ data:
         static_configs:
           - targets: [ 'ngsa-cosmos.default.svc.cluster.local:8080' ]
 
-      - job_name: 'loderunner'
+      - job_name: 'webv'
         static_configs:
-          - targets: [ 'loderunner.default.svc.cluster.local:8080' ]
+          - targets: [ 'webv.default.svc.cluster.local:8080' ]
 
       - job_name: 'kubernetes-cadvisor'
 

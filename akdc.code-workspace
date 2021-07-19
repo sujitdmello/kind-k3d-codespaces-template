@@ -5,8 +5,8 @@
 			"path": "."
 		},
 		{
-			"name": "loderunner",
-			"path": "../loderunner"
+			"name": "webv",
+			"path": "../webvalidate"
 		},
 		{
 			"name": "ngsa-app",

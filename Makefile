@@ -1,4 +1,4 @@
-.PHONY: help all create delete deploy check clean app loderunner test reset-prometheus reset-grafana jumpbox target
+.PHONY: help all create delete deploy check clean app webv test load-test reset-prometheus reset-grafana jumpbox
 
 help :
 	@echo "Usage:"
@@ -7,10 +7,11 @@ help :
 	@echo "   make delete           - delete the kind cluster"
 	@echo "   make deploy           - deploy the apps to the cluster"
 	@echo "   make check            - check the endpoints with curl"
+	@echo "   make test             - run a WebValidate test"
+	@echo "   make load-test        - run a 60 second WebValidate test"
 	@echo "   make clean            - delete the apps from the cluster"
 	@echo "   make app              - build and deploy a local app docker image"
-	@echo "   make loderunner       - build and deploy a local LodeRunner docker image"
-	@echo "   make test             - run a LodeRunner test"
+	@echo "   make webv             - build and deploy a local WebV docker image"
 	@echo "   make reset-prometheus - reset the Prometheus volume (existing data is deleted)"
 	@echo "   make reset-grafana    - reset the Grafana volume (existing data is deleted)"
 	@echo "   make jumpbox          - deploy a 'jumpbox' pod"
@@ -48,14 +49,14 @@ deploy :
 	-kubectl apply -f deploy/fluentbit/stdout-config.yaml
 	-kubectl apply -f deploy/fluentbit/fluentbit-pod.yaml
 
-	# deploy LodeRunner after the app starts
+	# deploy WebV after the app starts
 	@kubectl wait pod ngsa-memory --for condition=ready --timeout=30s
-	-kubectl apply -f deploy/loderunner
+	-kubectl apply -f deploy/webv
 
 	# wait for the pods to start
 	@kubectl wait pod -n monitoring --for condition=ready --all --timeout=30s
 	@kubectl wait pod fluentb --for condition=ready --timeout=30s
-	@kubectl wait pod loderunner --for condition=ready --timeout=30s
+	@kubectl wait pod webv --for condition=ready --timeout=30s
 
 	# display pod status
 	@kubectl get po -A | grep "default\|monitoring"
@@ -73,7 +74,7 @@ clean :
 	# delete the deployment
 	@# continue on error
 	-kubectl delete pod jumpbox --ignore-not-found=true
-	-kubectl delete -f deploy/loderunner --ignore-not-found=true
+	-kubectl delete -f deploy/webv --ignore-not-found=true
 	-kubectl delete -f deploy/ngsa-memory --ignore-not-found=true
 	-kubectl delete ns monitoring --ignore-not-found=true
 	-kubectl delete -f deploy/fluentbit/fluentbit-pod.yaml --ignore-not-found=true
@@ -88,34 +89,34 @@ app :
 
 	kind load docker-image ngsa-app:local
 
-	# delete LodeRunner
-	-kubectl delete -f deploy/loderunner --ignore-not-found=true
+	# delete WebV
+	-kubectl delete -f deploy/webv --ignore-not-found=true
 
 	# delete/deploy the app
 	-kubectl delete -f deploy/ngsa-memory --ignore-not-found=true
 	kubectl apply -f deploy/ngsa-local
 
-	# deploy LodeRunner after app starts
+	# deploy WebValidate after app starts
 	@kubectl wait pod ngsa-memory --for condition=ready --timeout=30s
 	@sleep 5
-	kubectl apply -f deploy/loderunner
-	@kubectl wait pod loderunner --for condition=ready --timeout=30s
+	kubectl apply -f deploy/webv
+	@kubectl wait pod webv --for condition=ready --timeout=30s
 
 	@kubectl get po
 
 	# display the app version
 	-http localhost:30080/version
 
-loderunner :
+webv :
 	# build the local image and load into kind
-	docker build ../loderunner -t ngsa-lr:local
+	docker build ../webvalidate -t webv:local
 	
-	kind load docker-image ngsa-lr:local
+	kind load docker-image webv:local
 
-	# delete / create LodeRunner
-	-kubectl delete -f deploy/loderunner --ignore-not-found=true
-	kubectl apply -f deploy/loderunner-local
-	kubectl wait pod loderunner --for condition=ready --timeout=30s
+	# delete / create WebValidate
+	-kubectl delete -f deploy/webv --ignore-not-found=true
+	kubectl apply -f deploy/webv-local
+	kubectl wait pod webv --for condition=ready --timeout=30s
 	@kubectl get po
 
 	# display the current version
@@ -123,7 +124,13 @@ loderunner :
 
 test :
 	# use WebValidate to run a test
-	webv --verbose --server http://localhost:30080 --files webv/benchmark.json
+	webv --verbose --server http://localhost:30080 --files webv/baseline.json
+	# the 400 and 404 results are expected
+	# Errors and ValidationErrorCount should both be 0
+
+load-test :
+	# use WebValidate to run a 60 second test
+	webv --verbose --server http://localhost:30080 --files webv/benchmark.json --run-loop --sleep 100 --duration 60
 
 reset-prometheus :
 	# remove and create the /prometheus volume
