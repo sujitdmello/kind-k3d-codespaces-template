@@ -1,23 +1,32 @@
-# Kind Dev Cluster on Codespaces Template
+# Kubernetes Dev Cluster on Codespaces Template
 
 > Setup a Kubernetes Developer Cluster using `kind` or `k3d` running in [GitHub Codespaces](https://github.com/features/codespaces)
 
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
 
-> [GitHub Codespaces](https://github.com/features/codespaces) is currently in preview
+> [GitHub Codespaces](https://github.com/features/codespaces) is currently in `limited public beta`
 
 ## Overview
 
-This is a template that will setup a Kubernetes developer cluster using `Kind` and `GitHub Codespaces`
+This is a template that will setup a Kubernetes developer cluster using `Kind` or `K3d` in a `GitHub Codespace` or local `Dev Container`
+
+We use this for `inner-loop` Kubernetes development. Note that it is not appropriate for production use (but is a great `Developer Experience`)
+
+> This Codespace is tested with `zsh` and `oh-my-zsh` - it "should" work with bash ...
+
+## Create your repo
 
 Create your repo from this template and add your application code
+
+- Click the `Use this template` button
+- Enter your repo details
 
 ## Open with Codespaces
 
 - Click the `Code` button on your repo
 - Click `Open with Codespaces`
 - Click `New Codespace`
-- Choose the `4 core option`
+- Choose the `4 core` or `8 core` option
 
 ![Create Codespace](./images/OpenWithCodespaces.jpg)
 

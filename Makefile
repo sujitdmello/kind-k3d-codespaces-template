@@ -124,13 +124,13 @@ webv :
 
 test :
 	# use WebValidate to run a test
-	webv --verbose --server http://localhost:30080 --files webv/baseline.json
+	cd webv && webv --verbose --server http://localhost:30080 --files baseline.json
 	# the 400 and 404 results are expected
 	# Errors and ValidationErrorCount should both be 0
 
 load-test :
 	# use WebValidate to run a 60 second test
-	webv --verbose --server http://localhost:30080 --files webv/benchmark.json --run-loop --sleep 100 --duration 60
+	cd webv && webv --verbose --server http://localhost:30080 --files benchmark.json --run-loop --sleep 100 --duration 60
 
 reset-prometheus :
 	# remove and create the /prometheus volume
