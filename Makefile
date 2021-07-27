@@ -134,14 +134,14 @@ load-test :
 
 reset-prometheus :
 	# remove and create the /prometheus volume
-	-kubectl delete -f deploy/prometheus/3-prometheus-deployment.yaml
+	@kubectl delete -f deploy/prometheus/3-prometheus-deployment.yaml --ignore-not-found=true
 	@sudo rm -rf /prometheus/wal
 	@sudo chown -R 65534:65534 /prometheus
 	# redeploy Prometheus - kubectl apply -f deploy/prometheus
 
 reset-grafana :
 	# remove and copy the data to /grafana volume
-	-kubectl delete -f deploy/grafana/deployment.yaml
+	@kubectl delete -f deploy/grafana/deployment.yaml --ignore-not-found=true
 	@sudo rm -f /grafana/grafana.db
 	@sudo cp -R deploy/grafanadata/grafana.db /grafana
 	@sudo chown -R 472:472 /grafana
