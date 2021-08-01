@@ -115,6 +115,12 @@ JP_VERSION=$(basename "$(curl -fsSL -o /dev/null -w "%{url_effective}" https://g
 curl -Lo /usr/local/bin/jp https://github.com/jmespath/jp/releases/download/${JP_VERSION}/jp-linux-${ARCHITECTURE}
 chmod +x /usr/local/bin/jp
 
+echo "Creating directories ..."
+mkdir -p /grafana
+chown -R 472:472 /grafana
+mkdir -p /prometheus
+chown -R 65534:65534 /prometheus
+
 echo "Updating config ..."
 echo -e 'export PATH=$PATH:$HOME/.dotnet/tools:/usr/local/istio/bin' | tee -a /etc/zsh/zshrc >> /etc/bash.bashrc
 
