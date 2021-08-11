@@ -211,11 +211,17 @@ make app
 
 ```
 
-## dapr
+## Next Steps
+
+> [Makefile](./Makefile) is a good place to start exploring
+
+## dapr Lab
 
 > make sure you are in the root of the repo
 
-Create a new dotnet webapi
+### Create and run a Web API app with dapr
+
+Create a new dotnet webapi project
 
 ```bash
 
@@ -237,13 +243,14 @@ Check the endpoints
 
 - open `curl.http`
   - click on the `dotnet app` `send request` link
-  - click on the `dapr` `send request` link
+  - click on the `dapr endpoint` `send request` link
 
 Open Zipkin
 
 - Click on the `ports` tab
   - Open the `Zipkin` link
-  - TODO - additional instructions
+  - Click on `Run Query`
+    - Explore the traces generated automatically with dapr
 
 Stop the app by pressing `ctl-c`
 
@@ -256,14 +263,35 @@ rm -rf dapr-app
 
 ```
 
-Add dapr SDK
+### Add dapr SDK to the weather app
 
-- Open the app in `weather`
-- TODO - steps
-
-## Next Steps
-
-> [Makefile](./Makefile) is a good place to start exploring
+- Open `weather/weather.csproj`
+  - Notice the package reference to `dapr.aspnetcore`
+- Open `weather/Startup.cs`
+  - Inject dapr into the services
+    - Line 29 `services.AddControllers().AddDapr()`
+  - Add `Cloud Events`
+    - Line 40 `app.UseCloudEvents()`
+- Open `weather/Controllers/WeatherForecastController.cs`
+  - `PostWeatherForecast` is a new function for `sending` pub-sub events
+    - Added the `Dapr.Topic` attribute
+    - Get the `daprClient` via Dependency Injection
+    - Publish the model to the `State Store`
+  - `Get`
+    - Added the `daprClient` via Dependency Injection
+    - Retrieve the model from the `State Store`
+  - Set a breakpoint on lines 30 and 38
+  - Press `F5` to run
+  - Open `curl.http`
+    - Send a message via dapr
+      - Click on `Send Request` under `post to dapr`
+      - Click `continue` when you hit the breakpoint
+      - 200 OK
+    - Get the model from the `State Store`
+      - Click on `Send Request` under `dapr endpoint`
+      - Click `continue` when you hit the breakpoint
+      - Verify the value from the POST request appears
+    - Change the `temperatureC` value in POST request and repeat
 
 ## FAQ
 
