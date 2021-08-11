@@ -6,7 +6,7 @@
 		},
 		{
 			"name": "components",
-			"path": "~/.dapr/components"
+			"path": "/home/vscode/.dapr/components"
 		},
 		{
 			"name": "webv",
