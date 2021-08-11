@@ -247,7 +247,7 @@ Check the endpoints
 
 Open Zipkin
 
-- Click on the `ports` tab
+- Click on the `Ports` tab
   - Open the `Zipkin` link
   - Click on `Run Query`
     - Explore the traces generated automatically with dapr
@@ -264,22 +264,24 @@ rm -rf dapr-app
 ```
 
 ### Add dapr SDK to the weather app
+> Changes to the app have already been made and can be reviewed below.
 
 - Open `weather/weather.csproj`
   - Notice the package reference to `dapr.aspnetcore`
 - Open `weather/Startup.cs`
-  - Inject dapr into the services
+  - Injected dapr into the services
     - Line 29 `services.AddControllers().AddDapr()`
-  - Add `Cloud Events`
+  - Added `Cloud Events`
     - Line 40 `app.UseCloudEvents()`
 - Open `weather/Controllers/WeatherForecastController.cs`
   - `PostWeatherForecast` is a new function for `sending` pub-sub events
     - Added the `Dapr.Topic` attribute
-    - Get the `daprClient` via Dependency Injection
-    - Publish the model to the `State Store`
+    - Got the `daprClient` via Dependency Injection
+    - Published the model to the `State Store`
   - `Get`
     - Added the `daprClient` via Dependency Injection
-    - Retrieve the model from the `State Store`
+    - Retrieved the model from the `State Store` 
+  - Review .vscode/launch.json and .vscode/task.json
   - Set a breakpoint on lines 30 and 38
   - Press `F5` to run
   - Open `dapr.http`
