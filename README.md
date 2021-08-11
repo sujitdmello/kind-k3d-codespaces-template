@@ -241,7 +241,7 @@ dapr run -a myapp -p 5000 -H 3500 -- dotnet run
 
 Check the endpoints
 
-- open `curl.http`
+- open `dapr.http`
   - click on the `dotnet app` `send request` link
   - click on the `dapr endpoint` `send request` link
 
@@ -282,7 +282,7 @@ rm -rf dapr-app
     - Retrieve the model from the `State Store`
   - Set a breakpoint on lines 30 and 38
   - Press `F5` to run
-  - Open `curl.http`
+  - Open `dapr.http`
     - Send a message via dapr
       - Click on `Send Request` under `post to dapr`
       - Click `continue` when you hit the breakpoint
