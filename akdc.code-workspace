@@ -1,8 +1,12 @@
 {
 	"folders": [
 		{
-			"name": "akdc-kind",
+			"name": "k8s",
 			"path": "."
+		},
+		{
+			"name": "components",
+			"path": "~/.dapr/components"
 		},
 		{
 			"name": "webv",

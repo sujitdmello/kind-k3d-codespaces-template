@@ -16,7 +16,7 @@ Content-Type: application/json
 
 {
     "Summary": "hot",
-    "TemperatureC": "36"
+    "TemperatureC": "38"
 }
 
 ###
