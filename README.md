@@ -211,6 +211,56 @@ make app
 
 ```
 
+## dapr
+
+> make sure you are in the root of the repo
+
+Create a new dotnet webapi
+
+```bash
+
+mkdir -p dapr-app
+cd dapr-app
+dotnet new webapi --no-https
+
+```
+
+Run the app with dapr
+
+```bash
+
+dapr run -a myapp -p 5000 -H 3500 -- dotnet run
+
+```
+
+Check the endpoints
+
+- open `curl.http`
+  - click on the `dotnet app` `send request` link
+  - click on the `dapr` `send request` link
+
+Open Zipkin
+
+- Click on the `ports` tab
+  - Open the `Zipkin` link
+  - TODO - additional instructions
+
+Stop the app by pressing `ctl-c`
+
+Clean up
+
+```bash
+
+cd ..
+rm -rf dapr-app
+
+```
+
+Add dapr SDK
+
+- Open the app in `weather`
+- TODO - steps
+
 ## Next Steps
 
 > [Makefile](./Makefile) is a good place to start exploring

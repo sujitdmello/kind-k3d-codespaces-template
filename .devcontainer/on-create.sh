@@ -2,6 +2,9 @@
 
 echo "on-create start" >> ~/status
 
+# run dotnet restore
+dotnet restore weather/weather.csproj 
+
 # clone repos
 git clone https://github.com/retaildevcrews/ngsa-app /workspaces/ngsa-app
 git clone https://github.com/microsoft/webvalidate /workspaces/webvalidate
